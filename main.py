@@ -27,7 +27,7 @@ def train(model, device, train_loader, optimizer, criterion, epoch, model_type):
         total += target.size(0)
         correct += predicted.eq(target).sum().item()
         
-        if batch_idx % 10 == 0:
+        if batch_idx % 5 == 0:
             print(f'Train Epoch: {epoch} [{batch_idx * len(data)}/{len(train_loader.dataset)} '
                   f'({100. * batch_idx / len(train_loader):.0f}%)]\tLoss: {loss.item():.6f}')            
             if not os.path.exists('checkpoints'):
@@ -94,12 +94,12 @@ def main():
     # Load Datasets
     train_dataset = CustomImageDataset(txt_file=os.path.join(args.data_dir, 'train.txt'), data_dir='.', transform=transform)
     # Assuming you have a val.txt as well, you can create a validation loader
-    # val_dataset = CustomImageDataset(txt_file=os.path.join(args.data_dir, 'val.txt'), data_dir='.', transform=transform)
-    test_dataset = CustomImageDataset(txt_file=os.path.join(args.data_dir, 'test.txt'), data_dir='.', transform=transform)
+    val_dataset = CustomImageDataset(txt_file=os.path.join(args.data_dir, 'val.txt'), data_dir='.', transform=transform)
+    # test_dataset = CustomImageDataset(txt_file=os.path.join(args.data_dir, 'test.txt'), data_dir='.', transform=transform)
 
     train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers)
-    # val_loader = DataLoader(val_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.num_workers)
-    test_loader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.num_workers)
+    val_loader = DataLoader(val_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.num_workers)
+    # test_loader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.num_workers)
 
     # Get number of classes
     num_classes = 0
@@ -125,10 +125,10 @@ def main():
     # Training and Testing Loop
     for epoch in range(1, args.epochs + 1):
         train_loss, train_acc = train(model, device, train_loader, optimizer, criterion, epoch, args.model_type)
-        test_loss, test_acc = test(model, device, test_loader, criterion)
+        val_loss, val_acc = test(model, device, val_loader, criterion)
         
         print(f'Epoch: {epoch}, Train Loss: {train_loss:.4f}, Train Acc: {train_acc:.2f}%, '
-              f'Test Loss: {test_loss:.4f}, Test Acc: {test_acc:.2f}%\n')
+              f'Val Loss: {val_loss:.4f}, Val Acc: {val_acc:.2f}%\n')
 
 if __name__ == '__main__':
     main()
