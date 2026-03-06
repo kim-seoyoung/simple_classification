@@ -94,6 +94,7 @@ def main():
     # Argument Parser for parameter settings
     parser = argparse.ArgumentParser(description='Bird, Drone, and UAV Classification Training')
     parser.add_argument('--data_dir', type=str, required=True, help='Path to the dataset directory containing train.txt, val.txt, test.txt')
+    parser.add_argument('--split_dir', type=str, required=True, help='Path to the dataset split txt')
     parser.add_argument('--model_type', type=str, default='convnext_tiny', 
                         choices=['convnext_tiny', 'convnext_small', 'convnext_base', 
                                  'efficientnet_v2_s', 'efficientnet_v2_m', 'efficientnet_v2_l'],
@@ -121,9 +122,9 @@ def main():
     ])
 
     # Load Datasets
-    train_dataset = CustomImageDataset(txt_file=os.path.join(args.data_dir, 'train.txt'), data_dir='.', transform=transform)
+    train_dataset = CustomImageDataset(txt_file=os.path.join(args.split_dir, 'train.txt'), data_dir=args.data_dir, transform=transform)
     # Assuming you have a val.txt as well, you can create a validation loader
-    val_dataset = CustomImageDataset(txt_file=os.path.join(args.data_dir, 'val.txt'), data_dir='.', transform=transform)
+    val_dataset = CustomImageDataset(txt_file=os.path.join(args.split_dir, 'val.txt'), data_dir=args.data_dir, transform=transform)
     # test_dataset = CustomImageDataset(txt_file=os.path.join(args.data_dir, 'test.txt'), data_dir='.', transform=transform)
 
     train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers)
