@@ -73,6 +73,7 @@ def test(model, device, test_loader, criterion):
         
         classes = torch.unique(torch.cat((all_targets_t, all_preds_t)))
         f1_scores = []
+        class_metrics = {}
         for c in classes:
             tp = ((all_preds_t == c) & (all_targets_t == c)).sum().item()
             fp = ((all_preds_t == c) & (all_targets_t != c)).sum().item()
@@ -83,12 +84,19 @@ def test(model, device, test_loader, criterion):
             f1 = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0.0
             f1_scores.append(f1)
             
+            class_acc = tp / (tp + fn) if (tp + fn) > 0 else 0.0
+            class_metrics[str(c.item())] = {
+                "f1_score": f1 * 100.0,
+                "accuracy": class_acc * 100.0
+            }
+            
         test_f1 = (sum(f1_scores) / len(f1_scores)) * 100.0 if f1_scores else 0.0
     else:
         test_f1 = 0.0
+        class_metrics = {}
 
     print(f'\nTest set: Average loss: {test_loss:.4f}, Accuracy: {correct}/{total} ({test_acc:.2f}%), F1 Score: {test_f1:.2f}%\n')
-    return test_loss, test_acc, test_f1
+    return test_loss, test_acc, test_f1, class_metrics
 
 def main():
     # Argument Parser for parameter settings
@@ -133,7 +141,7 @@ def main():
 
     # Get number of classes
     num_classes = 0
-    with open(os.path.join(args.data_dir, 'train.txt'), 'r') as f:
+    with open(os.path.join(args.split_dir, 'train.txt'), 'r') as f:
         for line in f:
             label = int(line.strip().split()[1])
             if label > num_classes:
@@ -156,13 +164,14 @@ def main():
     best_val_acc = 0.0
     for epoch in range(1, args.epochs + 1):
         train_loss, train_acc = train(model, device, train_loader, optimizer, criterion, epoch, args.model_type, args.save_dir)
-        val_loss, val_acc, val_f1 = test(model, device, val_loader, criterion)
+        val_loss, val_acc, val_f1, class_metrics = test(model, device, val_loader, criterion)
         
         if val_acc >= best_val_acc:
             best_val_acc = val_acc
             metrics = {
                 "accuracy": val_acc,
-                "f1_score": val_f1
+                "f1_score": val_f1,
+                "class_metrics": class_metrics
             }
             if not os.path.exists(args.save_dir):
                 os.makedirs(args.save_dir)
