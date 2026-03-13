@@ -86,6 +86,15 @@ def main():
             transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
         ])(rgb_img).unsqueeze(0).to(device)
 
+        # Get classification prediction
+        with torch.no_grad():
+            preds = model(input_tensor)
+            pred_class = preds.argmax(dim=1).item()
+
+        # Append prediction result as suffix to the output file name
+        base_path, ext = os.path.splitext(out_path)
+        out_path = f"{base_path}_pred_{pred_class}{ext}"
+
         # Generate CAM
         targets = None  # Uses the highest scoring category
         grayscale_cam = cam(input_tensor=input_tensor, targets=targets)
