@@ -93,7 +93,13 @@ def main():
 
         # Visualization
         visualization = show_cam_on_image(rgb_img, grayscale_cam, use_rgb=True)
-        cv2.imwrite(out_path, cv2.cvtColor(visualization, cv2.COLOR_RGB2BGR))
+        
+        # Convert original image back to uint8 BGR and concatenate horizontally
+        orig_bgr = cv2.cvtColor(np.uint8(255 * rgb_img), cv2.COLOR_RGB2BGR)
+        cam_bgr = cv2.cvtColor(visualization, cv2.COLOR_RGB2BGR)
+        concat_img = np.concatenate((orig_bgr, cam_bgr), axis=1)
+        
+        cv2.imwrite(out_path, concat_img)
 
         if (i + 1) % 50 == 0:
             print(f"Processed {i + 1}/{total_images} images.")
