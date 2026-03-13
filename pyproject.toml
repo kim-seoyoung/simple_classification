@@ -10,6 +10,7 @@ dependencies = [
     "numpy",
     "python-box",
     "timm>=1.0.24",
+    "grad-cam>=1.5.5",
 ]
 
 [[tool.uv.index]]
